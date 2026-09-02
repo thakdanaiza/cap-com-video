@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Local environments
+.venv/
+venv/
+env/
+.conda/
+
+# Generated video/image outputs
+crf_test/
+sharpness_compare/
+sharpness_compare_roi/
+outputs/
+event/
+_edge_frame_exports/
+_long_video_exports/
+*_crf_test/
+*.log
+
+# OS/editor files
+.DS_Store
+Thumbs.db

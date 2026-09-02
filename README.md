@@ -2,10 +2,10 @@
 
 Runnable release bundle for video review, CRF quality testing, and image/video sharpness comparison in the `non-flip` / `flip` workflow.
 
-Default release path:
+Work from the repository root:
 
 ```text
-/home/cra-space-center/Desktop/real-6-day-26-30-copy/cap-com-video/
+cap-com-video/
 ```
 
 ## Release Contents
@@ -47,7 +47,7 @@ sudo apt install -y python3 ffmpeg
 Create and activate the conda environment:
 
 ```bash
-cd /home/cra-space-center/Desktop/real-6-day-26-30-copy/cap-com-video
+cd cap-com-video
 conda env create -f environment.yml
 conda activate cap-com-video
 ```
@@ -78,11 +78,11 @@ ffprobe -version
 Run the local web server:
 
 ```bash
-cd /home/cra-space-center/Desktop/real-6-day-26-30-copy/cap-com-video
+cd cap-com-video
 conda activate cap-com-video
 python video_review_center.py \
-  --flip /home/cra-space-center/Desktop/real-6-day-26-30-copy/flip \
-  --non-flip /home/cra-space-center/Desktop/real-6-day-26-30-copy/non-flip \
+  --flip /path/to/flip \
+  --non-flip /path/to/non-flip \
   --host 127.0.0.1 \
   --port 8765
 ```
@@ -123,7 +123,7 @@ Stop the server with `Ctrl+C`.
 Use this tool to choose a CRF value that keeps enough image detail without producing unnecessarily large files:
 
 ```bash
-cd /home/cra-space-center/Desktop/real-6-day-26-30-copy/cap-com-video
+cd cap-com-video
 conda activate cap-com-video
 python test_video_crop_calibrator_crf.py /path/to/input.mp4 \
   --config ./crop_calibration_space_24.json \
@@ -166,7 +166,7 @@ crf_test/
 Compare PNG frames from a CRF test:
 
 ```bash
-cd /home/cra-space-center/Desktop/real-6-day-26-30-copy/cap-com-video
+cd cap-com-video
 conda activate cap-com-video
 python compare_image_sharpness.py \
   --input ./crf_test/input_stem_crf16_sample.png \
@@ -220,7 +220,7 @@ Metrics are screening tools, not final visual judgment. Noisy footage can score 
 Before marking this bundle as v1-ready:
 
 ```bash
-cd /home/cra-space-center/Desktop/real-6-day-26-30-copy/cap-com-video
+cd cap-com-video
 conda activate cap-com-video
 python -m py_compile \
   video_review_center.py \
@@ -245,4 +245,3 @@ Validation with real media:
 ```
 
 If the review UI opens but event/session data is empty, verify `--command-csv` and `--remote-video-csv`.
-

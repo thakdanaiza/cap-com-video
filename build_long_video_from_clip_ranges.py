@@ -16,6 +16,7 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -24,8 +25,8 @@ from datetime import datetime, timedelta
 from pathlib import Path
 
 
-DEFAULT_SOURCE_ROOT = Path("/home/cra-space-center/Desktop/real-6-day-26-30-copy/flip")
-DEFAULT_OUTPUT_ROOT = Path("/home/cra-space-center/Desktop/real-6-day-26-30-copy")
+DEFAULT_SOURCE_ROOT = Path(os.environ.get("CAP_COM_FLIP", "flip"))
+DEFAULT_OUTPUT_ROOT = Path(os.environ.get("CAP_COM_OUTPUT_ROOT", "outputs"))
 
 
 @dataclass(frozen=True)

@@ -7,17 +7,18 @@ The script scans clip files in timestamp order, captures two images per clip
 writing note.txt and manifest.json metadata.
 
 Example:
-python3 /home/cra-space-center/Desktop/cap-com/build_clip_edge_frames.py \
-  --input-path /home/cra-space-center/Desktop/real-6-day-26-30-copy/flip/ch3-sleep \
+python3 build_clip_edge_frames.py \
+  --input-path /path/to/flip/ch3-sleep \
   --frames-per-image 60 \
   --fps 60 \
-  --output /home/cra-space-center/Desktop/cap-com/_edge_frame_exports
+  --output ./_edge_frame_exports
 """
 
 from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import shutil
 import subprocess
@@ -33,7 +34,7 @@ FILENAME_RE = re.compile(
     r"^double_(?P<date>\d{8})_(?P<time>\d{6})_(?P<offset>\d{3,})\.mp4$",
     re.IGNORECASE,
 )
-DEFAULT_SOURCE_ROOT = Path("/home/cra-space-center/Desktop/real-6-day-26-30-copy/flip")
+DEFAULT_SOURCE_ROOT = Path(os.environ.get("CAP_COM_FLIP", "flip"))
 LAST_FRAME_LOOKBACK_SECONDS = 0.5
 DEFAULT_SOURCE_MODE = "video-fps"
 

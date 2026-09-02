@@ -4,6 +4,7 @@ import csv
 import hashlib
 import json
 import mimetypes
+import os
 import re
 import threading
 import time
@@ -24,8 +25,8 @@ from build_long_video_from_clip_ranges import (
 )
 
 
-DEFAULT_NON_FLIP = Path("/home/cra-space-center/Desktop/real-6-day-26-30-copy/non-flip")
-DEFAULT_FLIP = Path("/home/cra-space-center/Desktop/real-6-day-26-30-copy/flip")
+DEFAULT_NON_FLIP = Path(os.environ.get("CAP_COM_NON_FLIP", "non-flip"))
+DEFAULT_FLIP = Path(os.environ.get("CAP_COM_FLIP", "flip"))
 
 
 def latest_csv_or_default(prefix, fallback_name):
@@ -4175,7 +4176,7 @@ LONG_BUILDER_HTML = r"""<!doctype html>
   <main>
     <section class="panel">
       <h1>Long Builder</h1>
-      <div class="muted">หน้าแยกสำหรับสร้าง long จาก `--flip` เท่านั้น แล้ววางผลลง `event/row_xxx...` ของโฟลเดอร์ที่เจอคลิป</div>
+      <div class="muted">Standalone builder for long videos from `--flip` only. Outputs are written under `event/row_xxx...` next to the folder where clips are found.</div>
 
       <div class="grid">
         <div class="field">
@@ -4198,12 +4199,12 @@ LONG_BUILDER_HTML = r"""<!doctype html>
           <input id="fileRange" placeholder="0-30">
         </div>
         <div class="field span-2 mode-panel" id="singleModePanel">
-          <div class="muted">ตัวอย่างชื่อที่จะได้: `row_018_20260529_053928_027_034`</div>
+          <div class="muted">Example output name: `row_018_20260529_053928_027_034`</div>
         </div>
         <div class="field span-2 mode-panel hidden" id="sequenceModePanel">
           <label for="outputName">Output Name (optional)</label>
           <input id="outputName" placeholder="night_mix_cam_a">
-          <div class="muted">ถ้าใส่ จะใช้เป็นชื่อโฟลเดอร์/ไฟล์ประมาณ `row_018_night_mix_cam_a`</div>
+          <div class="muted">If set, this becomes the folder/file name, for example `row_018_night_mix_cam_a`.</div>
         </div>
         <div class="field span-2 mode-panel hidden" id="sequenceItemsField">
           <label for="sequenceText">Sequence Items</label>
@@ -4234,12 +4235,12 @@ LONG_BUILDER_HTML = r"""<!doctype html>
       </div>
 
       <div class="callout">
-        <div>`Single Range` ใช้แบบเดิม: 1 ช่วงต่อ 1 งาน</div>
-        <div>`Sequence Mix` ใส่ได้หลายบรรทัด โดยแต่ละบรรทัดเป็นช่วงเวลา `YYYYMMDD_HHMMSS 0-5`, ชื่อคลิป `double_...mp4`, หรือ path โฟลเดอร์ใน flip เพื่อดึงทั้งโฟลเดอร์มาต่อ</div>
+        <div>`Single Range` keeps the original behavior: one range per job.</div>
+        <div>`Sequence Mix` accepts multiple lines. Each line can be a range like `YYYYMMDD_HHMMSS 0-5`, a clip name like `double_...mp4`, or a folder path inside flip to append the whole folder.</div>
       </div>
 
       <details>
-        <summary>Advanced: Paste หลาย row</summary>
+        <summary>Advanced: Paste multiple rows</summary>
         <div class="grid">
           <div class="field">
             <label for="delimiter">Rows Delimiter</label>
@@ -4264,7 +4265,7 @@ LONG_BUILDER_HTML = r"""<!doctype html>
           </div>
           <div class="field span-2">
             <label for="rowsText">Rows</label>
-            <textarea id="rowsText" placeholder="วางหลาย row ที่นี่ ถ้าจะสร้างหลายงานพร้อมกัน"></textarea>
+            <textarea id="rowsText" placeholder="Paste multiple rows here to create several jobs at once"></textarea>
           </div>
         </div>
       </details>
@@ -4274,14 +4275,14 @@ LONG_BUILDER_HTML = r"""<!doctype html>
         <button id="refreshJobs">Refresh Status</button>
         <button id="openReview">Back To Review</button>
       </div>
-      <div id="buildStatus" class="muted">พร้อมสร้าง long</div>
+      <div id="buildStatus" class="muted">Ready to build long video</div>
 
       <div class="tips">
-        <div>โหมด `Sequence Mix` เหมาะกับคลิปที่ไม่ต่อกัน หรือข้ามวันข้ามเวลา แล้วอยากรวมเป็น long เดียว</div>
-        <div>ใน `Sequence Items` ใส่บรรทัดละหนึ่งรายการ และระบบจะต่อเรียงจากบนลงล่างตามลำดับที่พิมพ์</div>
-        <div>ถ้าใส่เป็นโฟลเดอร์ แนะนำใช้ path แบบ relative จากใน `flip` เพื่อไม่ชนกับชื่อโฟลเดอร์ซ้ำ</div>
-        <div>ถ้าไม่ใส่ `Output Name` ระบบจะตั้งชื่ออัตโนมัติตามคลิปแรกและคลิปสุดท้าย</div>
-        <div>ส่วน `Advanced` ใช้เฉพาะตอนวางหลาย row แล้วต้องระบุคอลัมน์ของ row number, prefix, และ range</div>
+        <div>`Sequence Mix` is useful for clips that are not contiguous, cross days/times, or need to be combined into one long video.</div>
+        <div>Enter one item per line in `Sequence Items`. The system concatenates them from top to bottom.</div>
+        <div>For folders, prefer a path relative to `flip` to avoid ambiguous duplicate folder names.</div>
+        <div>If `Output Name` is empty, the system generates a name from the first and last clip.</div>
+        <div>`Advanced` is only for pasting multiple rows where row number, prefix, and range columns must be mapped.</div>
       </div>
     </section>
 
@@ -4360,7 +4361,7 @@ LONG_BUILDER_HTML = r"""<!doctype html>
 
     function renderJobs(jobs) {
       if (!jobs.length) {
-        jobListEl.innerHTML = '<div class="empty">ยังไม่มีงานสร้าง long</div>';
+        jobListEl.innerHTML = '<div class="empty">No long-video jobs yet</div>';
         return;
       }
       jobListEl.replaceChildren(...jobs.map(job => {
@@ -4391,17 +4392,17 @@ LONG_BUILDER_HTML = r"""<!doctype html>
       const jobs = data.jobs || [];
       const active = jobs.find(job => job.status === "queued" || job.status === "running");
       if (active) {
-        buildStatusEl.textContent = active.progress?.message || "กำลังสร้าง long...";
+        buildStatusEl.textContent = active.progress?.message || "Building long video...";
       } else if (jobs[0]) {
-        buildStatusEl.textContent = jobs[0].progress?.message || `ล่าสุด: ${jobs[0].status}`;
+        buildStatusEl.textContent = jobs[0].progress?.message || `Latest: ${jobs[0].status}`;
       } else {
-        buildStatusEl.textContent = "พร้อมสร้าง long";
+        buildStatusEl.textContent = "Ready to build long video";
       }
       renderJobs(jobs);
     }
 
     async function createLong() {
-      buildStatusEl.textContent = "กำลังส่งคำสั่งสร้าง...";
+      buildStatusEl.textContent = "Submitting build request...";
       try {
         const job = await postJson("/api/long-jobs", {
           rowNumber: rowNumberEl.value,
@@ -4613,7 +4614,7 @@ EDGE_FRAME_BUILDER_HTML = r"""<!doctype html>
   <main>
     <section class="panel">
       <h1>Edge Frame Builder</h1>
-      <div class="muted">สร้าง slideshow จาก first/last frame ของคลิป โดยใช้ row + clip set + range แบบเดียวกับ long และเก็บผลในโครงสร้าง `event/row_xxx_..._edge_frames`</div>
+      <div class="muted">Build a slideshow from the first/last frame of each clip using the same row + clip set + range structure as long videos. Outputs are written under `event/row_xxx_..._edge_frames`.</div>
 
       <div class="grid">
         <div class="field">
@@ -4648,17 +4649,17 @@ EDGE_FRAME_BUILDER_HTML = r"""<!doctype html>
           </select>
         </div>
         <div class="field span-3">
-          <div class="muted">ตัวอย่างชื่อโฟลเดอร์: `row_018_20260527_153639_027_034_edge_frames`</div>
+          <div class="muted">Example folder name: `row_018_20260527_153639_027_034_edge_frames`</div>
         </div>
       </div>
 
       <details>
-        <summary>Advanced: Paste หลาย row</summary>
+        <summary>Advanced: Paste multiple rows</summary>
         <div class="grid">
           <div class="field">
             <label for="crf">CRF</label>
             <input id="crf" value="0" placeholder="0">
-            <div class="muted">ยิ่งต่ำยิ่งคม แต่ไฟล์ใหญ่ขึ้น</div>
+            <div class="muted">Lower values are sharper but create larger files.</div>
           </div>
           <div class="field">
             <label for="preset">Preset</label>
@@ -4670,12 +4671,12 @@ EDGE_FRAME_BUILDER_HTML = r"""<!doctype html>
               <option value="fast">fast</option>
               <option value="veryfast">veryfast</option>
             </select>
-            <div class="muted">veryslow ใช้เวลานานสุดแต่บีบอัดได้ละเอียดที่สุด</div>
+            <div class="muted">veryslow takes the longest but compresses most carefully.</div>
           </div>
           <div class="field">
             <label for="jpgQuality">JPG Quality</label>
             <input id="jpgQuality" value="2" placeholder="2">
-            <div class="muted">มีผลเฉพาะโหมดเก่าที่ใช้ image extraction เท่านั้น</div>
+            <div class="muted">Only affects the legacy image-extraction mode.</div>
           </div>
           <div class="field">
             <label for="delimiter">Rows Delimiter</label>
@@ -4700,7 +4701,7 @@ EDGE_FRAME_BUILDER_HTML = r"""<!doctype html>
           </div>
           <div class="field span-3">
             <label for="rowsText">Rows</label>
-            <textarea id="rowsText" placeholder="วางหลาย row ที่นี่ ถ้าจะสร้างหลายงานพร้อมกัน"></textarea>
+            <textarea id="rowsText" placeholder="Paste multiple rows here to create several jobs at once"></textarea>
           </div>
         </div>
       </details>
@@ -4710,12 +4711,12 @@ EDGE_FRAME_BUILDER_HTML = r"""<!doctype html>
         <button id="refreshJobs">Refresh Status</button>
         <button id="openReview">Back To Review</button>
       </div>
-      <div id="buildStatus" class="muted">พร้อมสร้าง edge frames</div>
+      <div id="buildStatus" class="muted">Ready to build edge frames</div>
 
       <div class="tips">
-        <div>3 ช่องหลักยังเหมือนเดิม: `Row Number`, `Clip Set`, `Range`</div>
-        <div>`Hold Seconds` คือเวลาค้างของหัวคลิปและท้ายคลิปต่อหนึ่งด้าน เช่น 1 = หัว 1 วินาที + ท้าย 1 วินาที</div>
-        <div>ผลลัพธ์จะมีวิดีโอ, `frames/`, `note.txt`, และ `manifest.json` เพื่อเปิดดูใน review center ต่อได้</div>
+        <div>The three core fields are still `Row Number`, `Clip Set`, and `Range`.</div>
+        <div>`Hold Seconds` controls how long the first and last frame stay on screen per side. Example: 1 = first 1 second + last 1 second.</div>
+        <div>Outputs include a video, `frames/`, `note.txt`, and `manifest.json` so they can be reviewed in Video Review Center.</div>
       </div>
     </section>
 
@@ -4781,7 +4782,7 @@ EDGE_FRAME_BUILDER_HTML = r"""<!doctype html>
 
     function renderJobs(jobs) {
       if (!jobs.length) {
-        jobListEl.innerHTML = '<div class="empty">ยังไม่มีงานสร้าง edge frames</div>';
+        jobListEl.innerHTML = '<div class="empty">No edge-frame jobs yet</div>';
         return;
       }
       jobListEl.replaceChildren(...jobs.map(job => {
@@ -4812,17 +4813,17 @@ EDGE_FRAME_BUILDER_HTML = r"""<!doctype html>
       const jobs = data.jobs || [];
       const active = jobs.find(job => job.status === "queued" || job.status === "running");
       if (active) {
-        buildStatusEl.textContent = active.progress?.message || "กำลังสร้าง edge frames...";
+        buildStatusEl.textContent = active.progress?.message || "Building edge frames...";
       } else if (jobs[0]) {
-        buildStatusEl.textContent = jobs[0].progress?.message || `ล่าสุด: ${jobs[0].status}`;
+        buildStatusEl.textContent = jobs[0].progress?.message || `Latest: ${jobs[0].status}`;
       } else {
-        buildStatusEl.textContent = "พร้อมสร้าง edge frames";
+        buildStatusEl.textContent = "Ready to build edge frames";
       }
       renderJobs(jobs);
     }
 
     async function createEdgeFrames() {
-      buildStatusEl.textContent = "กำลังส่งคำสั่งสร้าง...";
+      buildStatusEl.textContent = "Submitting build request...";
       try {
         const job = await postJson("/api/edge-frame-jobs", {
           rowNumber: rowNumberEl.value,
