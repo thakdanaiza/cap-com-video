@@ -1,0 +1,16 @@
+{
+  "left_x": 0,
+  "left_y": 0,
+  "left_w": 617,
+  "left_h": 360,
+  "right_x": 640,
+  "right_y": 0,
+  "right_w": 475,
+  "right_h": 357,
+  "right_rotate_180": true,
+  "gap_px": 0,
+  "preview_scale": 100,
+  "seam_match_enable": true,
+  "seam_width_px": 30,
+  "right_luma_gain": 1.1
+}
